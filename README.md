@@ -1,5 +1,5 @@
 # Bizyl Tech Challenge - Bug Fixes and Refactoring
-
+## Video Link: https://drive.google.com/file/d/1AG2KwjnX20DyX-T0XRuyFiBEAzURPmpd/view?usp=drive_link
 ## Summary
 This report details the fixes and enhancements done on the job board application, including bug fixes in both backend API (`jobsRoute.js`) and frontend component (`JobList.jsx`).
 
