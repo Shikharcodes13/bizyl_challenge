@@ -1,12 +1,7 @@
-// JobList.jsx
-// Sanitized for Bizyl Tech Challenge
-
 import React, { useEffect, useState, useCallback } from "react";
 
-// Job type options for filtering
 const JOB_TYPES = ['all', 'full-time', 'part-time', 'remote'];
 
-// Custom hook for job data management
 const useJobs = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +33,6 @@ const useJobs = () => {
   return { jobs, loading, error, refetch: fetchJobs };
 };
 
-// Filter component for job types
 const JobTypeFilter = ({ selectedType, onTypeChange }) => {
   return (
     <div className="job-filter">
@@ -58,7 +52,6 @@ const JobTypeFilter = ({ selectedType, onTypeChange }) => {
   );
 };
 
-// Job item component
 const JobItem = ({ job }) => {
   return (
     <li key={job.id} className="job-item">
@@ -74,12 +67,10 @@ const JobItem = ({ job }) => {
   );
 };
 
-// Loading component
 const LoadingSpinner = () => (
   <div className="loading">Loading jobs...</div>
 );
 
-// Error component
 const ErrorMessage = ({ error, onRetry }) => (
   <div className="error">
     <p>Error loading jobs: {error}</p>
@@ -87,12 +78,10 @@ const ErrorMessage = ({ error, onRetry }) => (
   </div>
 );
 
-// Main JobList component
 const JobList = () => {
   const { jobs, loading, error, refetch } = useJobs();
   const [selectedJobType, setSelectedJobType] = useState('all');
 
-  // Filter jobs based on selected type
   const filteredJobs = jobs.filter(job => 
     selectedJobType === 'all' || job.type === selectedJobType
   );

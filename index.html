@@ -102,15 +102,11 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- JobList Component -->
     <script type="text/babel">
-        // JobList.jsx content goes here
         const { useState, useEffect, useCallback } = React;
 
-        // Job type options for filtering
         const JOB_TYPES = ['all', 'full-time', 'part-time', 'remote'];
 
-        // Custom hook for job data management
         const useJobs = () => {
             const [jobs, setJobs] = useState([]);
             const [loading, setLoading] = useState(true);
@@ -142,7 +138,6 @@
             return { jobs, loading, error, refetch: fetchJobs };
         };
 
-        // Filter component for job types
         const JobTypeFilter = ({ selectedType, onTypeChange }) => {
             return (
                 <div className="job-filter">
@@ -162,7 +157,6 @@
             );
         };
 
-        // Job item component
         const JobItem = ({ job }) => {
             return (
                 <li key={job.id} className="job-item">
@@ -178,12 +172,10 @@
             );
         };
 
-        // Loading component
         const LoadingSpinner = () => (
             <div className="loading">Loading jobs...</div>
         );
 
-        // Error component
         const ErrorMessage = ({ error, onRetry }) => (
             <div className="error">
                 <p>Error loading jobs: {error}</p>
@@ -191,12 +183,10 @@
             </div>
         );
 
-        // Main JobList component
         const JobList = () => {
             const { jobs, loading, error, refetch } = useJobs();
             const [selectedJobType, setSelectedJobType] = useState('all');
 
-            // Filter jobs based on selected type
             const filteredJobs = jobs.filter(job => 
                 selectedJobType === 'all' || job.type === selectedJobType
             );
@@ -236,7 +226,6 @@
             );
         };
 
-        // Render the app
         ReactDOM.render(<JobList />, document.getElementById('root'));
     </script>
 </body>
