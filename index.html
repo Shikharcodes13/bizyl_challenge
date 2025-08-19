@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bizyl Job Board</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .job-filter {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .job-filter select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .jobs-list {
+            list-style: none;
+            padding: 0;
+        }
+        .job-item {
+            border: 1px solid #e0e0e0;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .job-type {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+        .job-details {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 14px;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .error button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .job-count {
+            margin: 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .no-jobs {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="root"></div>
+    </div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- JobList Component -->
+    <script type="text/babel">
+        // JobList.jsx content goes here
+        const { useState, useEffect, useCallback } = React;
+
+        // Job type options for filtering
+        const JOB_TYPES = ['all', 'full-time', 'part-time', 'remote'];
+
+        // Custom hook for job data management
+        const useJobs = () => {
+            const [jobs, setJobs] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            const fetchJobs = useCallback(async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
+                    const response = await fetch("http://localhost:3001/api/jobs");
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    setJobs(data);
+                } catch (err) {
+                    setError(err.message || 'Failed to fetch jobs');
+                } finally {
+                    setLoading(false);
+                }
+            }, []);
+
+            useEffect(() => {
+                fetchJobs();
+            }, [fetchJobs]);
+
+            return { jobs, loading, error, refetch: fetchJobs };
+        };
+
+        // Filter component for job types
+        const JobTypeFilter = ({ selectedType, onTypeChange }) => {
+            return (
+                <div className="job-filter">
+                    <label htmlFor="job-type-filter">Filter by job type: </label>
+                    <select
+                        id="job-type-filter"
+                        value={selectedType}
+                        onChange={(e) => onTypeChange(e.target.value)}
+                    >
+                        {JOB_TYPES.map(type => (
+                            <option key={type} value={type}>
+                                {type === 'all' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            );
+        };
+
+        // Job item component
+        const JobItem = ({ job }) => {
+            return (
+                <li key={job.id} className="job-item">
+                    <div className="job-header">
+                        <strong>{job.title}</strong>
+                        <span className="job-type">{job.type}</span>
+                    </div>
+                    <div className="job-details">
+                        <span className="salary">${job.salary.toLocaleString()}</span>
+                        <span className="posted-date">Posted: {job.postedDate}</span>
+                    </div>
+                </li>
+            );
+        };
+
+        // Loading component
+        const LoadingSpinner = () => (
+            <div className="loading">Loading jobs...</div>
+        );
+
+        // Error component
+        const ErrorMessage = ({ error, onRetry }) => (
+            <div className="error">
+                <p>Error loading jobs: {error}</p>
+                <button onClick={onRetry}>Retry</button>
+            </div>
+        );
+
+        // Main JobList component
+        const JobList = () => {
+            const { jobs, loading, error, refetch } = useJobs();
+            const [selectedJobType, setSelectedJobType] = useState('all');
+
+            // Filter jobs based on selected type
+            const filteredJobs = jobs.filter(job => 
+                selectedJobType === 'all' || job.type === selectedJobType
+            );
+
+            const handleJobTypeChange = (newType) => {
+                setSelectedJobType(newType);
+            };
+
+            return (
+                <div className="job-list-container">
+                    <h2>Job Board</h2>
+                    
+                    <JobTypeFilter 
+                        selectedType={selectedJobType}
+                        onTypeChange={handleJobTypeChange}
+                    />
+                    
+                    {loading && <LoadingSpinner />}
+                    
+                    {error && <ErrorMessage error={error} onRetry={refetch} />}
+                    
+                    {!loading && !error && (
+                        <>
+                            <div className="job-count">
+                                Showing {filteredJobs.length} of {jobs.length} jobs
+                            </div>
+                            <ul className="jobs-list">
+                                {filteredJobs.length > 0 ? (
+                                    filteredJobs.map((job) => <JobItem key={job.id} job={job} />)
+                                ) : (
+                                    <li className="no-jobs">No jobs found for the selected filter.</li>
+                                )}
+                            </ul>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<JobList />, document.getElementById('root'));
+    </script>
+</body>
+</html>
